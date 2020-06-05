@@ -1,0 +1,15 @@
+base
+hcandersenr
+tidyverse
+ggplot2
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+word2vec
+text2vec
+fastrtext
+tokenizers

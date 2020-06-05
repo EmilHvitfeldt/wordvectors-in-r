@@ -1,0 +1,163 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  cache = TRUE
+)
+```
+
+# wordvectors-in-r
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of this repository is to showcase how to pretrain word vectors and how to acces them in R.
+This repository will not show you why you should use each of the methods or how they work.
+Only how they are being used within the R language.
+Examples will be focused on getting word vectors that will work well with [textrecipes](https://textrecipes.tidymodels.org/)'s [step_word_embeddings](https://textrecipes.tidymodels.org/reference/step_word_embeddings.html) step which requires a tibble where the first column contains tokens, and additional columns should contain embeddings vectors.
+
+For more information about read:
+
+- [Dive into Deep Learning: Natural Language Processing: Pretraining](http://d2l.ai/chapter_natural-language-processing-pretraining/index.html)
+
+## Data and packages
+
+We will be using the [hcandersenr](https://github.com/EmilHvitfeldt/hcandersenr) package to provide data for the examples.
+In addition will be load [tidyverse](https://www.tidyverse.org/) and [tokenizers](https://github.com/ropensci/tokenizers).
+These two packages are not essencial for this to work but provides a little ease of use.
+
+```{r, message=FALSE}
+library(hcandersenr)
+library(tidyverse)
+library(tokenizers)
+```
+
+We will start by collapsing the text from hcandersenr such that we have 1 fairy tale per string.
+
+```{r}
+fairy_tales <- hcandersen_en %>%
+  nest(data = c(text)) %>%
+  mutate(text = map_chr(data, ~ paste(.x$text, collapse = " "))) %>%
+  pull(text)
+
+str(fairy_tales)
+```
+
+Taking a look reveals we have a little under half a million tokens.
+This is pretty good but properly on the low end for building good word vectors.
+
+```{r}
+fairy_tales %>% 
+  count_words() %>% 
+  sum()
+```
+
+## text2vec
+
+### Package
+
+https://github.com/bnosac/word2vec
+
+### Fitting the model
+
+```{r}
+library(word2vec)
+
+model <- word2vec(x = fairy_tales, type = "cbow", dim = 100, window = 5, iter = 20)
+```
+
+### Extraction word vectors
+
+```{r}
+word_vectors <- as.matrix(model) %>%
+  as.data.frame() %>%
+  rownames_to_column("tokens") %>%
+  as_tibble()
+
+word_vectors
+```
+
+## Glove
+
+### Package
+
+https://github.com/dselivanov/text2vec
+
+### Fitting the model
+
+```{r include=FALSE}
+library(text2vec)
+
+tokens <- space_tokenizer(fairy_tales)
+it <- itoken(tokens, progressbar = FALSE)
+vocab <- create_vocabulary(it)
+vocab <- prune_vocabulary(vocab, term_count_min = 5L)
+vectorizer <- vocab_vectorizer(vocab)
+tcm <- create_tcm(it, vectorizer, skip_grams_window = 5L)
+glove <- GlobalVectors$new(rank = 100, x_max = 10)
+wv_main <- glove$fit_transform(tcm, n_iter = 10, convergence_tol = 0.01)
+```
+
+```{r eval=FALSE}
+library(text2vec)
+
+tokens <- space_tokenizer(fairy_tales)
+it <- itoken(tokens, progressbar = FALSE)
+vocab <- create_vocabulary(it)
+vocab <- prune_vocabulary(vocab, term_count_min = 5L)
+vectorizer <- vocab_vectorizer(vocab)
+tcm <- create_tcm(it, vectorizer, skip_grams_window = 5L)
+glove <- GlobalVectors$new(rank = 100, x_max = 10)
+wv_main <- glove$fit_transform(tcm, n_iter = 10, convergence_tol = 0.01)
+```
+### Extraction word vectors
+
+```{r inc}
+wv_context <- glove$components
+word_vectors <- wv_main + t(wv_context)
+
+word_vectors <- word_vectors %>%
+  as.data.frame() %>%
+  rownames_to_column("tokens") %>%
+  as_tibble()
+
+word_vectors
+```
+
+## Fasttext
+
+### Package
+
+https://github.com/pommedeterresautee/fastrtext
+
+### Fitting the model
+
+```{r}
+library(fastrtext)
+
+texts <- tolower(fairy_tales)
+tmp_file_txt <- tempfile()
+tmp_file_model <- tempfile()
+writeLines(text = texts, con = tmp_file_txt)
+execute(commands = c("skipgram", "-input", tmp_file_txt, "-output", tmp_file_model, 
+                     "-verbose", 1, "-dim", 100))
+
+model <- load_model(tmp_file_model)
+```
+
+### Extraction word vectors
+
+```{r}
+word_vectors <- get_word_vectors(model) %>%
+  as.data.frame() %>%
+  rownames_to_column("tokens") %>%
+  as_tibble()
+
+word_vectors
+```
