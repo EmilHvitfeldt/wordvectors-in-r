@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# wordvectors-in-r
+# Word Vectors in R
 
 <!-- badges: start -->
 <!-- badges: end -->
