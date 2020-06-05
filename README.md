@@ -61,7 +61,7 @@ fairy_tales %>%
 #> [1] 416311
 ```
 
-## text2vec
+## word2vec
 
 ### Package
 
@@ -243,4 +243,62 @@ word_vectors
 #> #   V84 <dbl>, V85 <dbl>, V86 <dbl>, V87 <dbl>, V88 <dbl>, V89 <dbl>,
 #> #   V90 <dbl>, V91 <dbl>, V92 <dbl>, V93 <dbl>, V94 <dbl>, V95 <dbl>,
 #> #   V96 <dbl>, V97 <dbl>, V98 <dbl>, V99 <dbl>, V100 <dbl>
+```
+
+## Starspace
+
+### Package
+
+<https://github.com/bnosac/ruimtehol>
+
+### Fitting the model
+
+``` r
+library(ruimtehol)
+
+set.seed(123456789)
+model <- embed_wordspace(fairy_tales, 
+                         dim = 100, ws = 5, epoch = 20, minCount = 5, lr = 0.05, 
+                         negSearchLimit = 5, similarity = "cosine")
+plot(model)
+```
+
+### Extraction word vectors
+
+``` r
+word_vectors <- as.matrix(model) %>%
+  as.data.frame() %>%
+  rownames_to_column("tokens") %>%
+  as_tibble()
+
+word_vectors
+#> # A tibble: 5,805 x 101
+#>    tokens       V1       V2       V3       V4       V5       V6       V7
+#>    <chr>     <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>    <dbl>
+#>  1 the    -7.63e-4  8.09e-4 -1.11e-3 -1.31e-4 -6.38e-5  9.35e-4 -7.59e-4
+#>  2 and    -6.57e-5  1.06e-4 -6.54e-5 -2.81e-5  6.58e-5  4.81e-5 -7.34e-6
+#>  3 of     -2.92e-3  2.89e-3 -2.42e-3  1.31e-3 -3.77e-4  3.27e-3 -2.85e-3
+#>  4 a      -8.47e-4  4.21e-5  4.06e-5 -4.89e-5  3.87e-4  1.05e-4 -2.86e-4
+#>  5 to     -3.73e-4 -7.48e-6  1.14e-4 -5.05e-5  2.24e-4  1.26e-4 -2.36e-4
+#>  6 in     -1.21e-3  1.30e-3 -1.47e-3 -2.43e-4 -4.04e-5  1.40e-3 -1.37e-3
+#>  7 was    -1.10e-3  1.41e-4  6.45e-4 -2.16e-4  2.07e-3 -2.31e-3 -2.71e-3
+#>  8 he     -1.41e-3 -2.72e-4 -7.09e-4 -2.45e-3 -1.90e-3  2.19e-3 -1.07e-3
+#>  9 that   -1.17e-3  2.23e-3 -1.88e-4 -1.09e-3  9.62e-4 -2.99e-4 -1.05e-3
+#> 10 it     -8.07e-5  4.07e-4 -3.29e-4 -2.68e-3  2.89e-3 -1.07e-3  9.34e-5
+#> # … with 5,795 more rows, and 93 more variables: V8 <dbl>, V9 <dbl>, V10 <dbl>,
+#> #   V11 <dbl>, V12 <dbl>, V13 <dbl>, V14 <dbl>, V15 <dbl>, V16 <dbl>,
+#> #   V17 <dbl>, V18 <dbl>, V19 <dbl>, V20 <dbl>, V21 <dbl>, V22 <dbl>,
+#> #   V23 <dbl>, V24 <dbl>, V25 <dbl>, V26 <dbl>, V27 <dbl>, V28 <dbl>,
+#> #   V29 <dbl>, V30 <dbl>, V31 <dbl>, V32 <dbl>, V33 <dbl>, V34 <dbl>,
+#> #   V35 <dbl>, V36 <dbl>, V37 <dbl>, V38 <dbl>, V39 <dbl>, V40 <dbl>,
+#> #   V41 <dbl>, V42 <dbl>, V43 <dbl>, V44 <dbl>, V45 <dbl>, V46 <dbl>,
+#> #   V47 <dbl>, V48 <dbl>, V49 <dbl>, V50 <dbl>, V51 <dbl>, V52 <dbl>,
+#> #   V53 <dbl>, V54 <dbl>, V55 <dbl>, V56 <dbl>, V57 <dbl>, V58 <dbl>,
+#> #   V59 <dbl>, V60 <dbl>, V61 <dbl>, V62 <dbl>, V63 <dbl>, V64 <dbl>,
+#> #   V65 <dbl>, V66 <dbl>, V67 <dbl>, V68 <dbl>, V69 <dbl>, V70 <dbl>,
+#> #   V71 <dbl>, V72 <dbl>, V73 <dbl>, V74 <dbl>, V75 <dbl>, V76 <dbl>,
+#> #   V77 <dbl>, V78 <dbl>, V79 <dbl>, V80 <dbl>, V81 <dbl>, V82 <dbl>,
+#> #   V83 <dbl>, V84 <dbl>, V85 <dbl>, V86 <dbl>, V87 <dbl>, V88 <dbl>,
+#> #   V89 <dbl>, V90 <dbl>, V91 <dbl>, V92 <dbl>, V93 <dbl>, V94 <dbl>,
+#> #   V95 <dbl>, V96 <dbl>, V97 <dbl>, V98 <dbl>, V99 <dbl>, V100 <dbl>
 ```
