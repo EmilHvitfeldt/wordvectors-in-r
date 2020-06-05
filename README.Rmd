@@ -58,7 +58,7 @@ fairy_tales %>%
   sum()
 ```
 
-## text2vec
+## word2vec
 
 ### Package
 
@@ -155,6 +155,34 @@ model <- load_model(tmp_file_model)
 
 ```{r}
 word_vectors <- get_word_vectors(model) %>%
+  as.data.frame() %>%
+  rownames_to_column("tokens") %>%
+  as_tibble()
+
+word_vectors
+```
+
+## Starspace
+
+### Package
+
+https://github.com/bnosac/ruimtehol
+
+### Fitting the model
+
+```{r}
+library(ruimtehol)
+
+set.seed(123456789)
+model <- embed_wordspace(fairy_tales, 
+                         dim = 100, ws = 5, epoch = 20, minCount = 5, lr = 0.05, negSearchLimit = 5, similarity = "cosine")
+plot(model)
+```
+
+### Extraction word vectors
+
+```{r}
+word_vectors <- as.matrix(model) %>%
   as.data.frame() %>%
   rownames_to_column("tokens") %>%
   as_tibble()
